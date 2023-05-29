@@ -34,3 +34,22 @@ func ParseVlan(vlan string) (int, error) {
 	}
 	return v, nil
 }
+
+// ParseIsolate parses the isolate option
+func ParseIsolate(isolate string) (string, error) {
+	if isolate == "" {
+		return "false", nil // default
+	}
+	opt_isolate_bool, err := strconv.ParseBool(isolate)
+	if err != nil {
+		if isolate == "strict" {
+			return "strict", nil
+		} else {
+			return "", fmt.Errorf("failed to parse isolate option: %w", err)
+		}
+	}
+	if opt_isolate_bool {
+		return "true", nil
+	}
+	return "false", nil
+}

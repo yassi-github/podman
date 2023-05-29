@@ -27,8 +27,11 @@ const (
 	// podmanOptionsKey key used to store the podman network options in a cni config
 	podmanOptionsKey = "podman_options"
 
-	// ingressPolicySameBridge is used to only allow connection on the same bridge network
+	// ingressPolicySameBridge is used to allow connection on the same bridge network among same policy podman network
 	ingressPolicySameBridge = "same-bridge"
+
+	// ingressPolicyStrictSameBridge is used to only allow connection on the same bridge network among all podman network
+	ingressPolicyStrictSameBridge = "strict"
 )
 
 // cniPortMapEntry struct is used by the portmap plugin
@@ -226,12 +229,17 @@ func newPortMapPlugin() portMapConfig {
 }
 
 // newFirewallPlugin creates a generic firewall plugin
-func newFirewallPlugin(isolate bool) firewallConfig {
+func newFirewallPlugin(isolate string) firewallConfig {
 	fw := firewallConfig{
 		PluginType: "firewall",
 	}
-	if isolate {
+	switch isolate {
+	case "strict":
+		fw.IngressPolicy = ingressPolicyStrictSameBridge
+	case "true":
 		fw.IngressPolicy = ingressPolicySameBridge
+	default:
+		fw.IngressPolicy = ""
 	}
 	return fw
 }

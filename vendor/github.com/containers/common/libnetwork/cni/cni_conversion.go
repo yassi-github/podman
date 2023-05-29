@@ -123,6 +123,9 @@ func createNetworkFromCNIConfigList(conf *libcni.NetworkConfigList, confPath str
 		if firewallConf.IngressPolicy == ingressPolicySameBridge {
 			network.Options[types.IsolateOption] = "true"
 		}
+		if firewallConf.IngressPolicy == ingressPolicyStrictSameBridge {
+			network.Options[types.IsolateOption] = "strict"
+		}
 	}
 
 	return &network, nil
@@ -398,7 +401,7 @@ type options struct {
 	vlan           int
 	mtu            int
 	vlanPluginMode string
-	isolate        bool
+	isolate        string
 }
 
 func parseOptions(networkOptions map[string]string, networkDriver string) (*options, error) {
@@ -437,9 +440,9 @@ func parseOptions(networkOptions map[string]string, networkDriver string) (*opti
 			if networkDriver != types.BridgeNetworkDriver {
 				return nil, errors.New("isolate option is only supported with the bridge driver")
 			}
-			opt.isolate, err = strconv.ParseBool(v)
+			opt.isolate, err = internalutil.ParseIsolate(v)
 			if err != nil {
-				return nil, fmt.Errorf("failed to parse isolate option: %w", err)
+				return nil, err
 			}
 
 		default:
